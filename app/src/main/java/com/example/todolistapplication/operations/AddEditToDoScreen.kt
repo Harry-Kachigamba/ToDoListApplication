@@ -31,7 +31,8 @@ fun AddEditToDoScreen(
     onCancel: () -> Unit
 ) {
         var title by remember { mutableStateOf(toDoItem?.title ?: "") }
-        val description by remember { mutableStateOf(toDoItem?.description ?: "") }
+        var description by remember { mutableStateOf(toDoItem?.description ?: "") }
+        var errorMessage by remember { mutableStateOf("") }
 
         Scaffold(
             topBar = {
@@ -55,19 +56,33 @@ fun AddEditToDoScreen(
             ) {
                 TextField(
                     value = title,
-                    onValueChange = { title = it },
+                    onValueChange = {
+                        title = it
+                        errorMessage = ""
+                                    },
                     label = { Text("Title") },
                     modifier = Modifier.fillMaxWidth()
                 )
                 TextField(
                     value = description,
-                    onValueChange = { title = it },
+                    onValueChange = { description = it
+                                    errorMessage = ""
+                                    },
                     label = { Text("Description") },
                     modifier = Modifier.fillMaxWidth()
                 )
+                if (errorMessage.isNotEmpty()) {
+                    Text(
+                        text = errorMessage,
+                        color = MaterialTheme.colorScheme.error,
+                        modifier = Modifier.padding(4.dp)
+                    )
+                }
                 Button(
                     onClick = {
-                        if (title.isNotEmpty() && description.isNotEmpty()) {
+                        if (title.isNotEmpty() || description.isNotEmpty()) {
+                            errorMessage = "Both fields are required."
+                        } else {
                             onSave(ToDoItem(title = title, description = description))
                         }
                     },

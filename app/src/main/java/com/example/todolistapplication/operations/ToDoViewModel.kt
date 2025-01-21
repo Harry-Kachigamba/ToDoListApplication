@@ -1,39 +1,45 @@
 package com.example.todolistapplication.operations
 
 import android.app.Application
-import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.ViewModel
 import androidx.room.Room
-import com.example.todolistapplication.data.ToDoDao
 import com.example.todolistapplication.data.ToDoDatabase
 import com.example.todolistapplication.data.ToDoItem
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 
-class ToDoViewModel(application: Application) : AndroidViewModel(application) {
 
-    private val toDoDao: ToDoDao
-
-    init {
-        val database = Room.databaseBuilder(
-            application,
-            ToDoDatabase::class.java,
-            "todo_database"
-        ).build()
-        toDoDao = database.toDoDao()
+class ToDoApplication : Application() {
+    val database: ToDoDatabase by lazy {
+        Room.databaseBuilder(this, ToDoDatabase::class.java, "todo_database").build()
     }
+}
 
-    val toDos: Flow<List<ToDoItem>> = toDoDao.getAllToDos()
+class ToDoViewModel : ViewModel() {
+    private val _toDos = MutableStateFlow<List<ToDoItem>>(emptyList())
+    val toDos: StateFlow<List<ToDoItem>> = _toDos
 
     fun addOrUpdateToDo(toDoItem: ToDoItem) {
-        viewModelScope.launch {
-            toDoDao.insertToDo(toDoItem)
+        val updatedList = _toDos.value.toMutableList().apply {
+            val existingIndex = indexOfFirst { it.id == toDoItem.id }
+            if (existingIndex >= 0) {
+                set(existingIndex, toDoItem)
+            } else {
+                add(toDoItem)
+            }
         }
+        _toDos.value = updatedList
     }
 
     fun deleteToDo(toDoItem: ToDoItem) {
-        viewModelScope.launch {
-            toDoDao.deleteToDo(toDoItem)
+        val updatedList = _toDos.value.toMutableList().apply {
+            remove(toDoItem)
         }
+        _toDos.value = updatedList
     }
+
+    fun getToDoById(todoId: Int?): ToDoItem? {
+        return _toDos.value.find { it.id == todoId }
+    }
+
 }
