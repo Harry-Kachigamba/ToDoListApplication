@@ -5,7 +5,6 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import com.example.todolistapplication.data.ToDoItem
 
 @Composable
 fun Navigation(navController: NavHostController, toDoViewModel: ToDoViewModel = viewModel()) {
@@ -17,12 +16,9 @@ fun Navigation(navController: NavHostController, toDoViewModel: ToDoViewModel = 
                 }
             )
         }
-        composable("addEdit?todoId={todoId}") { backStackEntry ->
-            val todoId = backStackEntry.arguments?.getString("todoId")?.toIntOrNull()
-            val toDoItem = toDoViewModel.getToDoById(todoId)
-
+        composable("addEdit") {
             AddEditToDoScreen(
-                toDoItem = toDoItem,
+                toDoItem = null,
                 onSave = { item ->
                     toDoViewModel.addOrUpdateToDo(item)
                     navController.popBackStack()
