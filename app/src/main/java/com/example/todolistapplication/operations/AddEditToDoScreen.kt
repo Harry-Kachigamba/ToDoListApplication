@@ -80,7 +80,7 @@ fun AddEditToDoScreen(
                 }
                 Button(
                     onClick = {
-                        if (title.isNotEmpty() || description.isNotEmpty()) {
+                        if (title.isEmpty() || description.isEmpty()) {
                             errorMessage = "Both fields are required."
                         } else {
                             onSave(ToDoItem(title = title, description = description))
